@@ -86,6 +86,6 @@ TfLiteStatus CNN::predict() {
     return interpreter->Invoke();
 }
 
-TfLiteTensor* CNN::getOuput() {
+TfLiteTensor* CNN::getOutput() {
     return output;
 }

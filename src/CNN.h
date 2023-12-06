@@ -46,6 +46,6 @@ class CNN {
         CNN();
         TfLiteTensor* getInput();
         TfLiteStatus predict();
-        TfLiteTensor* getOuput();
+        TfLiteTensor* getOutput();
 }; 
 #endif

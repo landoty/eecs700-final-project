@@ -18,6 +18,9 @@
 #include "soc/rtc_cntl_reg.h"  // Disable brownour problems
 #include <EEPROM.h>            // read and write from flash memory
 #include "CNN.h"
+#include "image.h"
+
+#define DEBUG_TFLITE 1
 
 #define CAMERA_MODEL_XIAO_ESP32S3 // Has PSRAM
 
@@ -93,9 +96,9 @@ int GetImage(camera_fb_t * fb, TfLiteTensor* input)
             float *image_data = tflite::GetTensorData<float>(input);
             //delay(2000);
 
-            image_data[post * 3 + 0] = ((rgb >> 16) & 0xFF);  // R
-            image_data[post * 3 + 1] = ((rgb >> 8) & 0xFF);   // G
-            image_data[post * 3 + 2] = (rgb & 0xFF);          // B
+            image_data[post * 3 + 0] = ((rgb >> 16) & 0xFF) / 255.0;  // R
+            image_data[post * 3 + 1] = ((rgb >> 8) & 0xFF) / 255.0;   // G
+            image_data[post * 3 + 2] = (rgb & 0xFF) / 255.0;          // B
             post++;
         }
     }
@@ -174,6 +177,7 @@ void loop() {
   camera_fb_t * fb = NULL;
   esp_err_t res = ESP_OK;
   uint64_t start, dur_prep, dur_infer;
+
   fb = esp_camera_fb_get();
 
   if(!fb) {
@@ -182,20 +186,32 @@ void loop() {
   }
   // classify
   else{
-    Serial.println("image taken");
-    start = esp_timer_get_time();
-    GetImage(fb, cnn->getInput());
-    dur_prep = esp_timer_get_time() - start;
+    #if DEBUG_TFLITE==0
+      // Use camera image
+      start = esp_timer_get_time();
+      GetImage(fb, cnn->getInput());
+      dur_prep = esp_timer_get_time() - start;
+    #else
 
+      camera_fb_t static_fb;
+      static_fb.width = INPUT_W;
+      static_fb.height = INPUT_H;
+      static_fb.format = PIXFORMAT_RGB565;
+      static_fb.buf = (uint8_t*)static_img;
+
+      // Use a static image for debugging
+      GetImage(&static_fb, cnn->getInput());
+      Serial.printf("input: %.3f %.3f %.3f %.3f...\n", 
+        cnn->getInput()->data.f[0], cnn->getInput()->data.f[1], cnn->getInput()->data.f[2], cnn->getInput()->data.f[3]);
+    #endif
     Serial.println("making prediction");
     // do inference
     start = esp_timer_get_time();
     cnn->predict();
     dur_infer = esp_timer_get_time() - start;
-
-    Serial.println("does this make u fucking happy");
-    printf("input: %.3f %.3f %.3f...\n", 
-        cnn->getInput()->data.f[0], cnn->getInput()->data.f[1], cnn->getInput()->data.f[2], cnn->getInput()->data.f[3]);
+    printf("output: %.3f %.3f %.3f %.3f...\n", 
+        cnn->getOutput()->data.f[0], cnn->getOutput()->data.f[1], cnn->getOutput()->data.f[2], cnn->getOutput()->data.f[3]);
   }
+  Serial.printf("Preprocessing: %llu ms, Inference: %llu ms\n", dur_prep/1000, dur_infer/1000);
   esp_camera_fb_return(fb); 
 }
