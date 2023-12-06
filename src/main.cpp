@@ -16,9 +16,10 @@
 #include "Arduino.h"
 #include "soc/soc.h"           // Disable brownour problems
 #include "soc/rtc_cntl_reg.h"  // Disable brownour problems
-#include "driver/rtc_io.h"
 #include <EEPROM.h>            // read and write from flash memory
 #include "CNN.h"
+
+#define CAMERA_MODEL_XIAO_ESP32S3 // Has PSRAM
 
 // define the number of bytes you want to access
 #define EEPROM_SIZE 1
@@ -28,24 +29,23 @@
 #define LED_BUILT_IN 21
 
 // Pin definition for CAMERA_MODEL_AI_THINKER
-#define PWDN_GPIO_NUM     32
+#define PWDN_GPIO_NUM     -1
 #define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
+#define XCLK_GPIO_NUM     10
+#define SIOD_GPIO_NUM     40
+#define SIOC_GPIO_NUM     39
 
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
-
+#define Y9_GPIO_NUM       48
+#define Y8_GPIO_NUM       11
+#define Y7_GPIO_NUM       12
+#define Y6_GPIO_NUM       14
+#define Y5_GPIO_NUM       16
+#define Y4_GPIO_NUM       18
+#define Y3_GPIO_NUM       17
+#define Y2_GPIO_NUM       15
+#define VSYNC_GPIO_NUM    38
+#define HREF_GPIO_NUM     47
+#define PCLK_GPIO_NUM     13
 
 #define SETUP_AP 1 // 1=AP, 0=STA
 const char* ssid = "esp32-cam";
@@ -133,15 +133,14 @@ void setup() {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
+  config.frame_size = FRAMESIZE_96X96;
   config.pixel_format = PIXFORMAT_RGB565; // PIXFORMAT_JPEG; // for streaming
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
+  config.jpeg_quality = 12;
+  config.fb_count = 1;
   
   cnn = new CNN();
-  
   // Init Camera
   pinMode(LED_BUILT_IN, OUTPUT); // Set the pin as output
   esp_err_t err = esp_camera_init(&config);
@@ -149,7 +148,7 @@ void setup() {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
-
+  Serial.println("camera init");
   // Wi-Fi connection
   // SETUP_AP allows MCU to function as an access point for local testing
   #if SETUP_AP==1

@@ -28,7 +28,7 @@ namespace tflite
 class CNN {
     private:
         // operator resolver
-        tflite::MicroMutableOpResolver<4> *resolver;
+        tflite::MicroMutableOpResolver<14> *resolver;
         // model itself
         const tflite::Model *model; 
         // interpreter to run inference
