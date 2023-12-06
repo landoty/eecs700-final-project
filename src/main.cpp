@@ -192,15 +192,8 @@ void loop() {
       GetImage(fb, cnn->getInput());
       dur_prep = esp_timer_get_time() - start;
     #else
-
-      camera_fb_t static_fb;
-      static_fb.width = INPUT_W;
-      static_fb.height = INPUT_H;
-      static_fb.format = PIXFORMAT_RGB565;
-      static_fb.buf = (uint8_t*)static_img;
-
       // Use a static image for debugging
-      GetImage(&static_fb, cnn->getInput());
+       memcpy(cnn->getInput()->data.f, img_data, sizeof(img_data));
       Serial.printf("input: %.3f %.3f %.3f %.3f...\n", 
         cnn->getInput()->data.f[0], cnn->getInput()->data.f[1], cnn->getInput()->data.f[2], cnn->getInput()->data.f[3]);
     #endif
