@@ -173,6 +173,7 @@ void loop() {
   // take picture
   camera_fb_t * fb = NULL;
   esp_err_t res = ESP_OK;
+  uint64_t start, dur_prep, dur_infer;
   fb = esp_camera_fb_get();
 
   if(!fb) {
@@ -182,19 +183,19 @@ void loop() {
   // classify
   else{
     Serial.println("image taken");
+    start = esp_timer_get_time();
     GetImage(fb, cnn->getInput());
+    dur_prep = esp_timer_get_time() - start;
+
     Serial.println("making prediction");
     // do inference
+    start = esp_timer_get_time();
     cnn->predict();
-    
-    float pred = cnn->getOuput()->data.f[0];
-    Serial.printf("Prediction: %6.4f\n", pred);
+    dur_infer = esp_timer_get_time() - start;
 
-    EEPROM.begin(EEPROM_SIZE);
-    pictureNumber = EEPROM.read(0) + 1;
-    
-    EEPROM.write(0, pictureNumber);
-    EEPROM.commit();
+    Serial.println("does this make u fucking happy");
+    printf("input: %.3f %.3f %.3f...\n", 
+        cnn->getInput()->data.f[0], cnn->getInput()->data.f[1], cnn->getInput()->data.f[2], cnn->getInput()->data.f[3]);
   }
   esp_camera_fb_return(fb); 
 }
