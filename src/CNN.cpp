@@ -71,9 +71,7 @@ CNN::CNN() {
 
     // Obtain pointers to the model's input and output tensors.
     input = interpreter->input(0);
-    MicroPrintf("Input tensor alloc'd");
     output = interpreter->output(0);
-    MicroPrintf("Output tensor alloc'd");
     float scale = output->params.scale;
     int zero_point = output->params.zero_point; 
 }
