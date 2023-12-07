@@ -29,6 +29,8 @@ At approximately 90% training *and* validation accuracy, we are able to detect l
 
 Our model is deployed on the ESP32s3 from [Seeed Studio](https://www.seeedstudio.com/XIAO-ESP32S3-p-5627.html). It is equipped with 8MB of PSRAM and Flash as well as a 240MHZ processor. Our inference time is on average 10 seconds and renders via an HTTP stream, with the bounding box, in approximately 12 second intervals.
 
+[![video](./images/demo.png)](./images/demo.mp4)
+
 ### Contributors
 
 [Landen Doty](https://github.com/landoty)\
